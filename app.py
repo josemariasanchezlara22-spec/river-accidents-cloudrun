@@ -12,121 +12,202 @@ from river import preprocessing, tree, metrics
 
 
 # =========================================================
-# CONFIGURACION VISUAL
+# PAGE CONFIG
 # =========================================================
 
 st.set_page_config(
-    page_title="US Accidents | Modelo Incremental",
-    page_icon="🚗",
+    page_title="RoadRisk AI",
+    page_icon="🚦",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
+
+
+# =========================================================
+# CUSTOM CSS
+# =========================================================
 
 st.markdown(
     """
     <style>
-    .main {
-        background-color: #f7f9fc;
+    :root {
+        --bg: #f4f7fb;
+        --card: #ffffff;
+        --primary: #0f2742;
+        --primary-2: #1f6feb;
+        --muted: #6b7280;
+        --border: #e5e7eb;
+        --green: #0f8a5f;
+        --green-bg: #e9f8f1;
+        --red: #b42318;
+        --red-bg: #fdecec;
+        --orange: #b54708;
+        --orange-bg: #fff4e5;
+        --blue-bg: #eef5ff;
+    }
+
+    .stApp {
+        background: var(--bg);
     }
 
     .block-container {
-        padding-top: 1.5rem;
+        padding-top: 1.2rem;
         padding-bottom: 2rem;
+        max-width: 1280px;
     }
 
-    .app-header {
-        background: linear-gradient(90deg, #072146 0%, #1464A5 100%);
-        padding: 1.5rem 1.7rem;
-        border-radius: 18px;
+    .topbar {
+        background: linear-gradient(135deg, #0f2742 0%, #173b63 55%, #1f6feb 100%);
         color: white;
+        padding: 2rem;
+        border-radius: 24px;
         margin-bottom: 1.5rem;
+        box-shadow: 0 12px 35px rgba(15, 39, 66, 0.20);
     }
 
-    .app-header h1 {
+    .topbar h1 {
         color: white;
-        font-size: 2rem;
-        margin-bottom: 0.2rem;
+        font-size: 2.4rem;
+        margin: 0;
+        font-weight: 800;
+        letter-spacing: -0.04em;
     }
 
-    .app-header p {
-        color: #eaf3ff;
-        font-size: 1rem;
-        margin-bottom: 0;
+    .topbar p {
+        color: #dbeafe;
+        margin-top: 0.5rem;
+        font-size: 1.05rem;
+        max-width: 900px;
     }
 
-    .section-card {
-        background-color: white;
-        padding: 1.2rem;
-        border-radius: 16px;
-        border: 1px solid #e6eaf0;
-        box-shadow: 0 2px 8px rgba(7, 33, 70, 0.05);
+    .pill {
+        display: inline-block;
+        background: rgba(255,255,255,0.12);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.25);
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.85rem;
         margin-bottom: 1rem;
     }
 
-    .status-ok {
-        background-color: #e8f6ef;
-        color: #1b7f4c;
-        padding: 0.6rem 0.8rem;
-        border-radius: 10px;
-        font-weight: 600;
+    .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 1.25rem;
+        box-shadow: 0 8px 24px rgba(15, 39, 66, 0.06);
+        margin-bottom: 1rem;
+    }
+
+    .card-title {
+        font-size: 1.05rem;
+        font-weight: 750;
+        color: var(--primary);
+        margin-bottom: 0.35rem;
+    }
+
+    .card-subtitle {
+        color: var(--muted);
+        font-size: 0.92rem;
+        margin-bottom: 1rem;
+    }
+
+    .risk-high {
+        background: var(--red-bg);
+        border: 1px solid #f5b5b0;
+        color: var(--red);
+        border-radius: 18px;
+        padding: 1.3rem;
+        font-weight: 800;
+        font-size: 1.25rem;
+        text-align: center;
+    }
+
+    .risk-low {
+        background: var(--green-bg);
+        border: 1px solid #a8e6c8;
+        color: var(--green);
+        border-radius: 18px;
+        padding: 1.3rem;
+        font-weight: 800;
+        font-size: 1.25rem;
+        text-align: center;
+    }
+
+    .status-good {
+        background: var(--green-bg);
+        color: var(--green);
+        padding: 0.7rem 0.9rem;
+        border-radius: 14px;
+        font-weight: 700;
+    }
+
+    .status-neutral {
+        background: var(--blue-bg);
+        color: var(--primary-2);
+        padding: 0.7rem 0.9rem;
+        border-radius: 14px;
+        font-weight: 700;
     }
 
     .status-warn {
-        background-color: #fff4de;
-        color: #9a6100;
-        padding: 0.6rem 0.8rem;
-        border-radius: 10px;
-        font-weight: 600;
+        background: var(--orange-bg);
+        color: var(--orange);
+        padding: 0.7rem 0.9rem;
+        border-radius: 14px;
+        font-weight: 700;
     }
 
-    .status-risk {
-        background-color: #fdeaea;
-        color: #b42318;
-        padding: 0.6rem 0.8rem;
-        border-radius: 10px;
-        font-weight: 600;
+    div[data-testid="stMetric"] {
+        background: white;
+        border: 1px solid #e5e7eb;
+        padding: 1rem;
+        border-radius: 18px;
+        box-shadow: 0 8px 24px rgba(15, 39, 66, 0.05);
     }
 
     div[data-testid="stMetricValue"] {
-        font-size: 1.75rem;
+        font-size: 1.7rem;
+        color: #0f2742;
+        font-weight: 800;
+    }
+
+    div[data-testid="stMetricLabel"] {
+        color: #6b7280;
+    }
+
+    .small-code {
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        padding: 0.8rem;
+        border-radius: 12px;
+        font-family: monospace;
+        font-size: 0.86rem;
+        color: #334155;
+    }
+
+    .nav-note {
+        color: #6b7280;
+        font-size: 0.9rem;
+    }
+
+    button[kind="primary"] {
+        border-radius: 999px !important;
     }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-st.markdown(
-    """
-    <div class="app-header">
-        <h1>US Accidents | Aprendizaje Incremental con River</h1>
-        <p>
-            Aplicación desplegable en Cloud Run para predicción online, entrenamiento incremental
-            y persistencia del modelo en Google Cloud Storage.
-        </p>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
 
 # =========================================================
-# CONSTANTES
+# CONFIG
 # =========================================================
 
-DEFAULT_PROJECT_ID = os.getenv(
-    "PROJECT_ID",
-    "ml-big-data-q2-up"
-)
-
-DEFAULT_BUCKET_NAME = os.getenv(
-    "BUCKET_NAME",
-    "us-accidents-am-up-02"
-)
-
-DEFAULT_PREFIX = os.getenv(
-    "DATA_PREFIX",
-    "raw/"
-)
+DEFAULT_PROJECT_ID = os.getenv("PROJECT_ID", "ml-big-data-q2-up")
+DEFAULT_BUCKET_NAME = os.getenv("BUCKET_NAME", "us-accidents-am-up-02")
+DEFAULT_PREFIX = os.getenv("DATA_PREFIX", "raw/")
 
 MODEL_PATH = os.getenv("MODEL_PATH", "models/modelo_incremental_ht.pkl")
 HISTORY_PATH = os.getenv("HISTORY_PATH", "models/history_incremental.csv")
@@ -181,8 +262,7 @@ def get_storage_client():
 
 
 def get_bucket(bucket_name: str):
-    client = get_storage_client()
-    return client.bucket(bucket_name)
+    return get_storage_client().bucket(bucket_name)
 
 
 def load_pickle_from_gcs(bucket_name: str, blob_name: str):
@@ -232,16 +312,13 @@ def delete_blob_if_exists(bucket_name: str, blob_name: str):
 
 def list_csv_files(bucket_name: str, prefix: str):
     bucket = get_bucket(bucket_name)
-
     blobs = list(bucket.list_blobs(prefix=prefix))
 
-    files = [
+    return sorted([
         blob.name
         for blob in blobs
         if blob.name.lower().endswith(".csv")
-    ]
-
-    return sorted(files)
+    ])
 
 
 def read_csv_from_gcs(bucket_name: str, blob_name: str) -> pd.DataFrame:
@@ -253,7 +330,7 @@ def read_csv_from_gcs(bucket_name: str, blob_name: str) -> pd.DataFrame:
 
 
 # =========================================================
-# MODELO RIVER
+# MODEL
 # =========================================================
 
 def new_model_bundle():
@@ -278,6 +355,7 @@ def learn_transformers(model_bundle, x: dict):
 
 def predict_one(model_bundle, x: dict):
     x_encoded = transform_x(model_bundle, x)
+
     y_pred = model_bundle["classifier"].predict_one(x_encoded)
 
     if y_pred is None:
@@ -290,9 +368,11 @@ def predict_one(model_bundle, x: dict):
 
 def learn_one(model_bundle, x: dict, y: int):
     x_encoded = learn_transformers(model_bundle, x)
+
     model_bundle["classifier"].learn_one(x_encoded, y)
     model_bundle["rows_trained"] = model_bundle.get("rows_trained", 0) + 1
     model_bundle["last_training_at"] = datetime.utcnow().isoformat()
+
     return model_bundle
 
 
@@ -318,7 +398,7 @@ def metric_snapshot(metric_bundle):
 
 
 # =========================================================
-# PREPARACION DE DATOS
+# DATA PREP
 # =========================================================
 
 def prepare_accidents_df(df: pd.DataFrame) -> pd.DataFrame:
@@ -376,9 +456,7 @@ def prepare_accidents_df(df: pd.DataFrame) -> pd.DataFrame:
 
         df[col] = df[col].fillna(False).astype(int)
 
-    keep_cols = SELECTED_FEATURES + [TARGET_BINARY, TARGET_ORIGINAL]
-
-    return df[keep_cols]
+    return df[SELECTED_FEATURES + [TARGET_BINARY, TARGET_ORIGINAL]]
 
 
 def row_to_x(row) -> dict:
@@ -388,10 +466,7 @@ def row_to_x(row) -> dict:
         value = row[feature]
 
         if pd.isna(value):
-            if feature in CAT_FEATURES:
-                value = "Unknown"
-            else:
-                value = 0
+            value = "Unknown" if feature in CAT_FEATURES else 0
 
         if feature in CAT_FEATURES:
             x[feature] = str(value)
@@ -401,46 +476,29 @@ def row_to_x(row) -> dict:
     return x
 
 
-def build_manual_x(
-    distance,
-    temperature,
-    humidity,
-    visibility,
-    wind_speed,
-    state,
-    weather,
-    year_month,
-    amenity,
-    crossing,
-    junction,
-    traffic_signal,
-    hour,
-    month,
-    dayofweek,
-    is_weekend
-):
+def build_manual_x(values: dict):
     return {
-        "Distance(mi)": float(distance),
-        "Temperature(F)": float(temperature),
-        "Humidity(%)": float(humidity),
-        "Visibility(mi)": float(visibility),
-        "Wind_Speed(mph)": float(wind_speed),
-        "State": str(state),
-        "Weather_Condition": str(weather),
-        "year_month": str(year_month),
-        "Amenity": float(amenity),
-        "Crossing": float(crossing),
-        "Junction": float(junction),
-        "Traffic_Signal": float(traffic_signal),
-        "hour": float(hour),
-        "month": float(month),
-        "dayofweek": float(dayofweek),
-        "is_weekend": float(is_weekend),
+        "Distance(mi)": float(values["distance"]),
+        "Temperature(F)": float(values["temperature"]),
+        "Humidity(%)": float(values["humidity"]),
+        "Visibility(mi)": float(values["visibility"]),
+        "Wind_Speed(mph)": float(values["wind_speed"]),
+        "State": str(values["state"]),
+        "Weather_Condition": str(values["weather"]),
+        "year_month": str(values["year_month"]),
+        "Amenity": float(values["amenity"]),
+        "Crossing": float(values["crossing"]),
+        "Junction": float(values["junction"]),
+        "Traffic_Signal": float(values["traffic_signal"]),
+        "hour": float(values["hour"]),
+        "month": float(values["month"]),
+        "dayofweek": float(values["dayofweek"]),
+        "is_weekend": float(values["is_weekend"]),
     }
 
 
 # =========================================================
-# ENTRENAMIENTO POR ARCHIVO
+# TRAINING
 # =========================================================
 
 def train_on_file(
@@ -474,7 +532,6 @@ def train_on_file(
 
     learned_rows = 0
     evaluated_rows = 0
-
     start = time.time()
 
     for _, row in df.iterrows():
@@ -516,67 +573,44 @@ def train_on_file(
 
 
 # =========================================================
-# SIDEBAR
+# STATE INIT
 # =========================================================
 
-with st.sidebar:
-    st.header("Configuracion")
+if "project_id" not in st.session_state:
+    st.session_state.project_id = DEFAULT_PROJECT_ID
 
-    project_id = st.text_input(
-        "Proyecto GCP",
-        value=DEFAULT_PROJECT_ID
-    )
+if "bucket_name" not in st.session_state:
+    st.session_state.bucket_name = DEFAULT_BUCKET_NAME
 
-    bucket_name = st.text_input(
-        "Bucket GCS",
-        value=DEFAULT_BUCKET_NAME
-    )
+if "prefix" not in st.session_state:
+    st.session_state.prefix = DEFAULT_PREFIX
 
-    prefix = st.text_input(
-        "Prefijo de datos",
-        value=DEFAULT_PREFIX
-    )
+if "max_rows" not in st.session_state:
+    st.session_state.max_rows = 8000
 
-    max_rows = st.number_input(
-        "Filas maximas por archivo",
-        min_value=100,
-        max_value=100000,
-        value=8000,
-        step=1000
-    )
+if "balance_training" not in st.session_state:
+    st.session_state.balance_training = True
 
-    balance_training = st.checkbox(
-        "Balancear clase mayoritaria",
-        value=True
-    )
-
-    st.divider()
-
-    st.caption("Artefactos")
-    st.code(f"gs://{bucket_name}/{MODEL_PATH}")
-    st.code(f"gs://{bucket_name}/{HISTORY_PATH}")
-
-
-# =========================================================
-# INICIALIZACION DE SESION
-# =========================================================
+bucket_name = st.session_state.bucket_name
+prefix = st.session_state.prefix
 
 if "model_bundle" not in st.session_state:
     try:
         loaded_model = load_pickle_from_gcs(bucket_name, MODEL_PATH)
 
         if loaded_model is None:
-            loaded_model = new_model_bundle()
-            st.session_state.model_load_status = "new"
+            st.session_state.model_bundle = new_model_bundle()
+            st.session_state.model_status = "Nuevo modelo creado"
+            st.session_state.model_status_type = "warn"
         else:
-            st.session_state.model_load_status = "loaded"
-
-        st.session_state.model_bundle = loaded_model
+            st.session_state.model_bundle = loaded_model
+            st.session_state.model_status = "Modelo cargado desde GCS"
+            st.session_state.model_status_type = "good"
 
     except Exception as e:
         st.session_state.model_bundle = new_model_bundle()
-        st.session_state.model_load_status = "error"
-        st.session_state.model_load_error = str(e)
+        st.session_state.model_status = f"No se pudo cargar el modelo: {e}"
+        st.session_state.model_status_type = "warn"
 
 if "history" not in st.session_state:
     try:
@@ -590,382 +624,378 @@ if "files" not in st.session_state:
 if "file_index" not in st.session_state:
     st.session_state.file_index = 0
 
+if "last_x" not in st.session_state:
+    st.session_state.last_x = None
+
 if "last_prediction" not in st.session_state:
     st.session_state.last_prediction = None
 
-if "last_x" not in st.session_state:
-    st.session_state.last_x = None
 
 model_bundle = st.session_state.model_bundle
 history = st.session_state.history
 
 
 # =========================================================
-# COMPONENTES VISUALES
+# HEADER
 # =========================================================
 
-def render_model_status_card():
-    status = st.session_state.get("model_load_status", "new")
-
-    if status == "loaded":
-        st.markdown(
-            '<div class="status-ok">Modelo cargado correctamente desde GCS</div>',
-            unsafe_allow_html=True
-        )
-    elif status == "new":
-        st.markdown(
-            '<div class="status-warn">No habia modelo previo. Se inicio un modelo nuevo.</div>',
-            unsafe_allow_html=True
-        )
-    else:
-        st.markdown(
-            '<div class="status-risk">No se pudo cargar el modelo desde GCS. Se inicio modelo local.</div>',
-            unsafe_allow_html=True
-        )
-        st.caption(st.session_state.get("model_load_error", ""))
-
-
-def render_prediction_inputs(prefix_key: str = "pred"):
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.markdown("**Variables numericas**")
-        distance = st.number_input("Distance(mi)", value=0.5, key=f"{prefix_key}_distance")
-        temperature = st.number_input("Temperature(F)", value=70.0, key=f"{prefix_key}_temp")
-        humidity = st.number_input("Humidity(%)", value=60.0, key=f"{prefix_key}_humidity")
-        visibility = st.number_input("Visibility(mi)", value=10.0, key=f"{prefix_key}_visibility")
-        wind_speed = st.number_input("Wind_Speed(mph)", value=5.0, key=f"{prefix_key}_wind")
-
-    with col2:
-        st.markdown("**Variables categoricas**")
-        state = st.text_input("State", value="CA", key=f"{prefix_key}_state")
-        weather = st.text_input("Weather_Condition", value="Clear", key=f"{prefix_key}_weather")
-        year_month = st.text_input("year_month", value="2023-03", key=f"{prefix_key}_year_month")
-
-        hour = st.number_input(
-            "hour",
-            min_value=0,
-            max_value=23,
-            value=18,
-            key=f"{prefix_key}_hour"
-        )
-
-        month = st.number_input(
-            "month",
-            min_value=1,
-            max_value=12,
-            value=3,
-            key=f"{prefix_key}_month"
-        )
-
-    with col3:
-        st.markdown("**Infraestructura y tiempo**")
-
-        dayofweek = st.number_input(
-            "dayofweek",
-            min_value=0,
-            max_value=6,
-            value=2,
-            key=f"{prefix_key}_dow"
-        )
-
-        is_weekend = st.selectbox("is_weekend", [0, 1], index=0, key=f"{prefix_key}_weekend")
-        amenity = st.selectbox("Amenity", [0, 1], index=0, key=f"{prefix_key}_amenity")
-        crossing = st.selectbox("Crossing", [0, 1], index=0, key=f"{prefix_key}_crossing")
-        junction = st.selectbox("Junction", [0, 1], index=1, key=f"{prefix_key}_junction")
-        traffic_signal = st.selectbox(
-            "Traffic_Signal",
-            [0, 1],
-            index=0,
-            key=f"{prefix_key}_signal"
-        )
-
-    x = build_manual_x(
-        distance=distance,
-        temperature=temperature,
-        humidity=humidity,
-        visibility=visibility,
-        wind_speed=wind_speed,
-        state=state,
-        weather=weather,
-        year_month=year_month,
-        amenity=amenity,
-        crossing=crossing,
-        junction=junction,
-        traffic_signal=traffic_signal,
-        hour=hour,
-        month=month,
-        dayofweek=dayofweek,
-        is_weekend=is_weekend
-    )
-
-    return x
-
-
-# =========================================================
-# TABS
-# =========================================================
-
-tabs = st.tabs(
-    [
-        "Dashboard",
-        "Prediccion online",
-        "Aprendizaje manual",
-        "Entrenamiento por archivo",
-        "Historial y artefactos",
-        "Informacion del proyecto"
-    ]
+st.markdown(
+    """
+    <div class="topbar">
+        <div class="pill">Online Learning · River · Cloud Run</div>
+        <h1>RoadRisk AI</h1>
+        <p>
+            Plataforma de aprendizaje incremental para estimar la severidad de accidentes
+            vehiculares usando datos históricos de US Accidents y almacenamiento en Google Cloud Storage.
+        </p>
+    </div>
+    """,
+    unsafe_allow_html=True
 )
 
 
 # =========================================================
-# TAB 1 - DASHBOARD
+# SIDEBAR SETTINGS
 # =========================================================
 
-with tabs[0]:
-    st.subheader("Dashboard del modelo")
+with st.sidebar:
+    st.title("Configuración")
 
-    render_model_status_card()
+    st.session_state.project_id = st.text_input(
+        "Project ID",
+        value=st.session_state.project_id
+    )
 
-    st.markdown("")
+    st.session_state.bucket_name = st.text_input(
+        "Bucket",
+        value=st.session_state.bucket_name
+    )
 
-    total_files_processed = 0
-    last_f1 = None
-    last_recall = None
-    last_accuracy = None
+    st.session_state.prefix = st.text_input(
+        "Prefijo de datos",
+        value=st.session_state.prefix
+    )
+
+    st.session_state.max_rows = st.number_input(
+        "Filas máximas por archivo",
+        min_value=100,
+        max_value=100000,
+        value=int(st.session_state.max_rows),
+        step=1000
+    )
+
+    st.session_state.balance_training = st.checkbox(
+        "Balancear clase mayoritaria",
+        value=bool(st.session_state.balance_training)
+    )
+
+    st.divider()
+
+    st.caption("Modelo")
+    st.code(f"gs://{st.session_state.bucket_name}/{MODEL_PATH}")
+
+    st.caption("Historial")
+    st.code(f"gs://{st.session_state.bucket_name}/{HISTORY_PATH}")
+
+
+# =========================================================
+# NAVIGATION
+# =========================================================
+
+page = st.radio(
+    "Navegación",
+    [
+        "Inicio",
+        "Predicción",
+        "Aprendizaje manual",
+        "Entrenamiento incremental",
+        "Monitoreo",
+        "Configuración técnica"
+    ],
+    horizontal=True,
+    label_visibility="collapsed"
+)
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+
+# =========================================================
+# PAGE: INICIO
+# =========================================================
+
+if page == "Inicio":
+    if st.session_state.model_status_type == "good":
+        st.markdown(
+            f'<div class="status-good">{st.session_state.model_status}</div>',
+            unsafe_allow_html=True
+        )
+    else:
+        st.markdown(
+            f'<div class="status-warn">{st.session_state.model_status}</div>',
+            unsafe_allow_html=True
+        )
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    latest_f1 = None
+    latest_recall = None
+    latest_file = "Sin archivos procesados"
 
     if not history.empty:
-        total_files_processed = len(history)
-
         if "f1" in history.columns:
-            last_f1 = history["f1"].iloc[-1]
-
+            latest_f1 = history["f1"].iloc[-1]
         if "recall" in history.columns:
-            last_recall = history["recall"].iloc[-1]
+            latest_recall = history["recall"].iloc[-1]
+        if "file" in history.columns:
+            latest_file = history["file"].iloc[-1]
 
-        if "accuracy" in history.columns:
-            last_accuracy = history["accuracy"].iloc[-1]
+    c1, c2, c3, c4 = st.columns(4)
 
-    col1, col2, col3, col4 = st.columns(4)
-
-    col1.metric(
+    c1.metric(
         "Registros aprendidos",
         f"{model_bundle.get('rows_trained', 0):,}"
     )
 
-    col2.metric(
+    c2.metric(
         "Archivos procesados",
-        f"{total_files_processed:,}"
+        f"{len(history):,}" if not history.empty else "0"
     )
 
-    col3.metric(
-        "Recall ultimo archivo",
-        "N/D" if last_recall is None else f"{last_recall:.3f}"
+    c3.metric(
+        "Recall más reciente",
+        "N/D" if latest_recall is None else f"{latest_recall:.3f}"
     )
 
-    col4.metric(
-        "F1 ultimo archivo",
-        "N/D" if last_f1 is None else f"{last_f1:.3f}"
+    c4.metric(
+        "F1 más reciente",
+        "N/D" if latest_f1 is None else f"{latest_f1:.3f}"
     )
 
-    st.markdown("")
-
-    left, right = st.columns([2, 1])
+    left, right = st.columns([1.7, 1])
 
     with left:
-        st.markdown('<div class="section-card">', unsafe_allow_html=True)
-        st.markdown("### Evolucion de metricas")
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.markdown('<div class="card-title">Evolución del modelo</div>', unsafe_allow_html=True)
+        st.markdown(
+            '<div class="card-subtitle">Métricas calculadas después de cada partición temporal procesada.</div>',
+            unsafe_allow_html=True
+        )
 
         if not history.empty:
             chart_cols = [
-                col
-                for col in ["accuracy", "precision", "recall", "f1"]
+                col for col in ["accuracy", "precision", "recall", "f1"]
                 if col in history.columns
             ]
 
             if chart_cols:
                 st.line_chart(history[chart_cols])
             else:
-                st.info("Aun no hay columnas de metricas para graficar.")
+                st.info("No hay métricas disponibles todavía.")
         else:
-            st.info("Aun no existe historial. Procesa al menos un archivo.")
+            st.info("Procesa un archivo para empezar a construir el historial.")
 
         st.markdown("</div>", unsafe_allow_html=True)
 
     with right:
-        st.markdown('<div class="section-card">', unsafe_allow_html=True)
-        st.markdown("### Estado operativo")
-
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.markdown('<div class="card-title">Estado operativo</div>', unsafe_allow_html=True)
+        st.write("Último archivo:", latest_file)
         st.write("Modelo:", model_bundle.get("model_name"))
         st.write("Creado:", model_bundle.get("created_at"))
-        st.write("Ultimo entrenamiento:", model_bundle.get("last_training_at"))
-        st.write("Bucket:", bucket_name)
-        st.write("Prefijo:", prefix)
-
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    if not history.empty:
-        st.markdown('<div class="section-card">', unsafe_allow_html=True)
-        st.markdown("### Ultimos archivos procesados")
-        st.dataframe(history.tail(10), use_container_width=True)
+        st.write("Último entrenamiento:", model_bundle.get("last_training_at"))
         st.markdown("</div>", unsafe_allow_html=True)
 
 
 # =========================================================
-# TAB 2 - PREDICCION ONLINE
+# PAGE: PREDICCION
 # =========================================================
 
-with tabs[1]:
-    st.subheader("Prediccion online")
-
+elif page == "Predicción":
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown('<div class="card-title">Nueva predicción de severidad</div>', unsafe_allow_html=True)
     st.markdown(
-        """
-        Captura las variables disponibles al momento del accidente.
-        El modelo devuelve si el accidente seria clasificado como severo o no severo.
-        """
+        '<div class="card-subtitle">Captura las condiciones disponibles del accidente.</div>',
+        unsafe_allow_html=True
     )
 
-    x_pred = render_prediction_inputs(prefix_key="predict")
+    with st.form("prediction_form"):
+        g1, g2, g3 = st.columns(3)
 
-    col_button, col_result = st.columns([1, 2])
+        with g1:
+            st.markdown("#### Condiciones físicas")
+            distance = st.number_input("Distancia afectada (mi)", value=0.5)
+            temperature = st.number_input("Temperatura (F)", value=70.0)
+            humidity = st.number_input("Humedad (%)", value=60.0)
+            visibility = st.number_input("Visibilidad (mi)", value=10.0)
+            wind_speed = st.number_input("Velocidad del viento (mph)", value=5.0)
 
-    with col_button:
-        predict_clicked = st.button("Ejecutar prediccion", type="primary")
+        with g2:
+            st.markdown("#### Ubicación y clima")
+            state = st.text_input("Estado", value="CA")
+            weather = st.text_input("Condición climática", value="Clear")
+            year_month = st.text_input("Mes del evento", value="2023-03")
+            hour = st.number_input("Hora", min_value=0, max_value=23, value=18)
+            month = st.number_input("Mes", min_value=1, max_value=12, value=3)
 
-    if predict_clicked:
-        y_pred, proba = predict_one(model_bundle, x_pred)
+        with g3:
+            st.markdown("#### Infraestructura")
+            dayofweek = st.number_input("Día de la semana", min_value=0, max_value=6, value=2)
+            is_weekend = st.selectbox("Fin de semana", [0, 1])
+            amenity = st.selectbox("Amenity", [0, 1])
+            crossing = st.selectbox("Crossing", [0, 1])
+            junction = st.selectbox("Junction", [0, 1], index=1)
+            traffic_signal = st.selectbox("Traffic Signal", [0, 1])
 
+        submitted = st.form_submit_button("Calcular riesgo", type="primary")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    if submitted:
+        x = build_manual_x({
+            "distance": distance,
+            "temperature": temperature,
+            "humidity": humidity,
+            "visibility": visibility,
+            "wind_speed": wind_speed,
+            "state": state,
+            "weather": weather,
+            "year_month": year_month,
+            "amenity": amenity,
+            "crossing": crossing,
+            "junction": junction,
+            "traffic_signal": traffic_signal,
+            "hour": hour,
+            "month": month,
+            "dayofweek": dayofweek,
+            "is_weekend": is_weekend,
+        })
+
+        y_pred, proba = predict_one(model_bundle, x)
+
+        st.session_state.last_x = x
         st.session_state.last_prediction = {
-            "x": x_pred,
             "y_pred": y_pred,
-            "proba": proba,
-            "predicted_at": datetime.utcnow().isoformat()
+            "proba": dict(proba),
+            "created_at": datetime.utcnow().isoformat()
         }
 
-        st.session_state.last_x = x_pred
+        r1, r2 = st.columns([1, 1])
 
-    if st.session_state.last_prediction is not None:
-        pred = st.session_state.last_prediction["y_pred"]
-        proba = st.session_state.last_prediction["proba"]
+        with r1:
+            if y_pred == 1:
+                st.markdown(
+                    '<div class="risk-high">RIESGO ALTO<br>Accidente severo probable</div>',
+                    unsafe_allow_html=True
+                )
+            else:
+                st.markdown(
+                    '<div class="risk-low">RIESGO BAJO<br>Accidente no severo probable</div>',
+                    unsafe_allow_html=True
+                )
 
-        st.markdown('<div class="section-card">', unsafe_allow_html=True)
-
-        if pred == 1:
-            st.markdown(
-                '<div class="status-risk">Prediccion: accidente severo</div>',
-                unsafe_allow_html=True
-            )
-        else:
-            st.markdown(
-                '<div class="status-ok">Prediccion: accidente no severo</div>',
-                unsafe_allow_html=True
-            )
-
-        st.write("Clase predicha:", pred)
-        st.write("Probabilidades estimadas:", dict(proba))
-
-        st.markdown("</div>", unsafe_allow_html=True)
+        with r2:
+            st.markdown('<div class="card">', unsafe_allow_html=True)
+            st.markdown('<div class="card-title">Detalle de predicción</div>', unsafe_allow_html=True)
+            st.write("Clase predicha:", y_pred)
+            st.write("Probabilidades:", dict(proba))
+            st.write("Fecha de predicción:", st.session_state.last_prediction["created_at"])
+            st.markdown("</div>", unsafe_allow_html=True)
 
 
 # =========================================================
-# TAB 3 - APRENDIZAJE MANUAL
+# PAGE: APRENDIZAJE MANUAL
 # =========================================================
 
-with tabs[2]:
-    st.subheader("Aprendizaje manual con etiqueta real")
-
+elif page == "Aprendizaje manual":
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown('<div class="card-title">Aprendizaje manual con etiqueta real</div>', unsafe_allow_html=True)
     st.markdown(
-        """
-        Esta seccion simula el caso en que un usuario consulta una prediccion y,
-        posteriormente, se conoce la etiqueta real. El modelo aprende un registro nuevo
-        sin reentrenar desde cero.
-        """
+        '<div class="card-subtitle">Permite actualizar el modelo usando el último caso consultado.</div>',
+        unsafe_allow_html=True
     )
 
     if st.session_state.last_x is None:
-        st.info("Primero ejecuta una prediccion en la pestana 'Prediccion online'.")
+        st.info("Primero realiza una predicción en la sección Predicción.")
     else:
-        st.markdown('<div class="section-card">', unsafe_allow_html=True)
-        st.markdown("### Ultimo caso consultado")
+        st.write("Último caso consultado:")
         st.json(st.session_state.last_x)
-        st.markdown("</div>", unsafe_allow_html=True)
 
-        y_true_manual = st.selectbox(
+        y_true = st.selectbox(
             "Etiqueta real observada",
             [0, 1],
-            format_func=lambda value: "No severo" if value == 0 else "Severo"
+            format_func=lambda x: "No severo" if x == 0 else "Severo"
         )
 
         if st.button("Actualizar modelo con este caso", type="primary"):
-            x_manual = st.session_state.last_x
+            prev_pred, prev_proba = predict_one(model_bundle, st.session_state.last_x)
 
-            previous_prediction, previous_proba = predict_one(model_bundle, x_manual)
-
-            learn_one(model_bundle, x_manual, int(y_true_manual))
-            save_pickle_to_gcs(model_bundle, bucket_name, MODEL_PATH)
+            learn_one(model_bundle, st.session_state.last_x, int(y_true))
+            save_pickle_to_gcs(model_bundle, st.session_state.bucket_name, MODEL_PATH)
 
             st.session_state.model_bundle = model_bundle
 
             st.success("Modelo actualizado y guardado en GCS.")
 
-            col1, col2, col3 = st.columns(3)
-            col1.metric("Prediccion previa", previous_prediction)
-            col2.metric("Etiqueta real", int(y_true_manual))
-            col3.metric("Registros aprendidos", f"{model_bundle.get('rows_trained', 0):,}")
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Predicción previa", prev_pred)
+            c2.metric("Etiqueta real", int(y_true))
+            c3.metric("Registros aprendidos", f"{model_bundle.get('rows_trained', 0):,}")
 
-            st.write("Probabilidades previas:", dict(previous_proba))
+    st.markdown("</div>", unsafe_allow_html=True)
 
 
 # =========================================================
-# TAB 4 - ENTRENAMIENTO POR ARCHIVO
+# PAGE: ENTRENAMIENTO INCREMENTAL
 # =========================================================
 
-with tabs[3]:
-    st.subheader("Entrenamiento incremental por archivo mensual")
-
+elif page == "Entrenamiento incremental":
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown('<div class="card-title">Entrenamiento incremental por archivo</div>', unsafe_allow_html=True)
     st.markdown(
-        """
-        Procesa archivos CSV desde Google Cloud Storage. Cada archivo representa una particion temporal.
-        El flujo aplicado es: **predecir → evaluar → aprender**.
-        """
+        '<div class="card-subtitle">Cada archivo CSV mensual se procesa como una nueva partición temporal.</div>',
+        unsafe_allow_html=True
     )
 
-    col1, col2, col3 = st.columns(3)
+    a, b, c = st.columns(3)
 
-    with col1:
-        if st.button("Listar archivos CSV"):
-            with st.spinner("Buscando archivos en GCS..."):
-                files = list_csv_files(bucket_name, prefix)
+    with a:
+        if st.button("Listar archivos", type="secondary"):
+            with st.spinner("Consultando Google Cloud Storage..."):
+                st.session_state.files = list_csv_files(
+                    st.session_state.bucket_name,
+                    st.session_state.prefix
+                )
+                st.session_state.file_index = 0
 
-            st.session_state.files = files
-            st.session_state.file_index = 0
+            st.success(f"Archivos encontrados: {len(st.session_state.files)}")
 
-            st.success(f"Archivos encontrados: {len(files)}")
+    with b:
+        process_next = st.button("Procesar siguiente archivo", type="primary")
 
-    with col2:
-        process_clicked = st.button("Procesar siguiente archivo", type="primary")
+    with c:
+        reset_all = st.button("Reiniciar modelo e historial")
 
-    with col3:
-        reset_clicked = st.button("Reiniciar modelo e historial")
-
-    if reset_clicked:
-        delete_blob_if_exists(bucket_name, MODEL_PATH)
-        delete_blob_if_exists(bucket_name, HISTORY_PATH)
+    if reset_all:
+        delete_blob_if_exists(st.session_state.bucket_name, MODEL_PATH)
+        delete_blob_if_exists(st.session_state.bucket_name, HISTORY_PATH)
 
         st.session_state.model_bundle = new_model_bundle()
         st.session_state.history = pd.DataFrame()
         st.session_state.files = []
         st.session_state.file_index = 0
-        st.session_state.last_prediction = None
         st.session_state.last_x = None
+        st.session_state.last_prediction = None
 
-        st.success("Modelo e historial reiniciados correctamente.")
+        st.success("Modelo e historial reiniciados.")
         st.rerun()
 
-    if process_clicked:
+    if process_next:
         if not st.session_state.files:
-            with st.spinner("Listando archivos automaticamente..."):
-                st.session_state.files = list_csv_files(bucket_name, prefix)
+            with st.spinner("Listando archivos automáticamente..."):
+                st.session_state.files = list_csv_files(
+                    st.session_state.bucket_name,
+                    st.session_state.prefix
+                )
                 st.session_state.file_index = 0
 
         files = st.session_state.files
@@ -976,163 +1006,144 @@ with tabs[3]:
         else:
             blob_name = files[idx]
 
-            st.info(f"Procesando archivo {idx + 1}/{len(files)}: {blob_name}")
+            st.info(f"Procesando {idx + 1}/{len(files)}: {blob_name}")
 
-            with st.spinner("Entrenando incrementalmente..."):
+            with st.spinner("Entrenando modelo incremental..."):
                 model_bundle, result = train_on_file(
                     model_bundle=model_bundle,
-                    bucket_name=bucket_name,
+                    bucket_name=st.session_state.bucket_name,
                     blob_name=blob_name,
-                    max_rows=int(max_rows),
-                    balance_training=balance_training
+                    max_rows=int(st.session_state.max_rows),
+                    balance_training=bool(st.session_state.balance_training)
                 )
 
-            save_pickle_to_gcs(model_bundle, bucket_name, MODEL_PATH)
+            save_pickle_to_gcs(
+                model_bundle,
+                st.session_state.bucket_name,
+                MODEL_PATH
+            )
 
             hist = st.session_state.history.copy()
-            result_df = pd.DataFrame([result])
-            hist = pd.concat([hist, result_df], ignore_index=True)
+            hist = pd.concat([hist, pd.DataFrame([result])], ignore_index=True)
 
             st.session_state.history = hist
-            save_history_to_gcs(hist, bucket_name, HISTORY_PATH)
+
+            save_history_to_gcs(
+                hist,
+                st.session_state.bucket_name,
+                HISTORY_PATH
+            )
 
             st.session_state.file_index += 1
             st.session_state.model_bundle = model_bundle
 
-            st.success("Archivo procesado. Modelo e historial guardados en GCS.")
+            st.success("Archivo procesado correctamente.")
 
-            col_a, col_b, col_c, col_d = st.columns(4)
-            col_a.metric("Accuracy", f"{result['accuracy']:.3f}")
-            col_b.metric("Recall", f"{result['recall']:.3f}")
-            col_c.metric("F1", f"{result['f1']:.3f}")
-            col_d.metric("Filas aprendidas", f"{result['rows_learned']:,}")
+            m1, m2, m3, m4 = st.columns(4)
+            m1.metric("Accuracy", f"{result['accuracy']:.3f}")
+            m2.metric("Recall", f"{result['recall']:.3f}")
+            m3.metric("F1", f"{result['f1']:.3f}")
+            m4.metric("Filas aprendidas", f"{result['rows_learned']:,}")
 
-    st.markdown("---")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    col_status_1, col_status_2, col_status_3 = st.columns(3)
+    s1, s2, s3 = st.columns(3)
+    s1.metric("Archivo actual", st.session_state.file_index)
+    s2.metric("Archivos cargados", len(st.session_state.files))
+    s3.metric("Filas máximas por archivo", f"{int(st.session_state.max_rows):,}")
 
-    col_status_1.metric(
-        "Indice de archivo actual",
-        st.session_state.file_index
-    )
-
-    col_status_2.metric(
-        "Archivos cargados",
-        len(st.session_state.files)
-    )
-
-    col_status_3.metric(
-        "Max filas por archivo",
-        f"{int(max_rows):,}"
-    )
-
-    if st.session_state.files:
-        next_idx = st.session_state.file_index
-
-        if next_idx < len(st.session_state.files):
-            st.write("Siguiente archivo:", st.session_state.files[next_idx])
-        else:
-            st.write("Siguiente archivo: no quedan archivos pendientes.")
+    if st.session_state.files and st.session_state.file_index < len(st.session_state.files):
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.markdown('<div class="card-title">Siguiente partición</div>', unsafe_allow_html=True)
+        st.write(st.session_state.files[st.session_state.file_index])
+        st.markdown("</div>", unsafe_allow_html=True)
 
 
 # =========================================================
-# TAB 5 - HISTORIAL Y ARTEFACTOS
+# PAGE: MONITOREO
 # =========================================================
 
-with tabs[4]:
-    st.subheader("Historial y artefactos")
+elif page == "Monitoreo":
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown('<div class="card-title">Monitoreo del desempeño</div>', unsafe_allow_html=True)
 
-    col1, col2 = st.columns(2)
+    if history.empty:
+        st.info("No hay historial. Procesa al menos un archivo.")
+    else:
+        metric_cols = [
+            col for col in ["accuracy", "precision", "recall", "f1"]
+            if col in history.columns
+        ]
 
-    with col1:
-        st.markdown('<div class="section-card">', unsafe_allow_html=True)
-        st.markdown("### Modelo")
-        st.code(f"gs://{bucket_name}/{MODEL_PATH}")
-        st.write("Registros aprendidos:", f"{model_bundle.get('rows_trained', 0):,}")
-        st.write("Ultima actualizacion:", model_bundle.get("last_training_at"))
-        st.markdown("</div>", unsafe_allow_html=True)
+        if metric_cols:
+            st.line_chart(history[metric_cols])
 
-    with col2:
-        st.markdown('<div class="section-card">', unsafe_allow_html=True)
-        st.markdown("### Historial")
-        st.code(f"gs://{bucket_name}/{HISTORY_PATH}")
+        if "severe_rate_file" in history.columns:
+            st.markdown("#### Tasa de accidentes severos por archivo")
+            st.line_chart(history[["severe_rate_file"]])
 
-        if history.empty:
-            st.write("No hay historial guardado.")
-        else:
-            st.write("Filas de historial:", len(history))
-
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    if not history.empty:
-        st.markdown("### Tabla completa de historial")
+        st.markdown("#### Historial completo")
         st.dataframe(history, use_container_width=True)
 
         csv_data = history.to_csv(index=False).encode("utf-8")
 
         st.download_button(
-            label="Descargar historial CSV",
+            "Descargar historial CSV",
             data=csv_data,
             file_name="history_incremental.csv",
             mime="text/csv"
         )
 
+    st.markdown("</div>", unsafe_allow_html=True)
+
 
 # =========================================================
-# TAB 6 - INFORMACION
+# PAGE: CONFIGURACION TECNICA
 # =========================================================
 
-with tabs[5]:
-    st.subheader("Informacion del proyecto")
+elif page == "Configuración técnica":
+    c1, c2 = st.columns(2)
 
-    st.markdown(
-        """
-        ### Objetivo
+    with c1:
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.markdown('<div class="card-title">Infraestructura</div>', unsafe_allow_html=True)
+        st.write("Project ID:", st.session_state.project_id)
+        st.write("Bucket:", st.session_state.bucket_name)
+        st.write("Prefijo:", st.session_state.prefix)
+        st.write("Modelo:", model_bundle.get("model_name"))
+        st.write("Registros aprendidos:", f"{model_bundle.get('rows_trained', 0):,}")
+        st.markdown("</div>", unsafe_allow_html=True)
 
-        Desplegar una solucion de aprendizaje incremental usando River sobre Google Cloud Run.
-        El modelo clasifica accidentes vehiculares como severos o no severos.
+    with c2:
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.markdown('<div class="card-title">Artefactos</div>', unsafe_allow_html=True)
+        st.markdown("Modelo")
+        st.markdown(
+            f'<div class="small-code">gs://{st.session_state.bucket_name}/{MODEL_PATH}</div>',
+            unsafe_allow_html=True
+        )
+        st.markdown("Historial")
+        st.markdown(
+            f'<div class="small-code">gs://{st.session_state.bucket_name}/{HISTORY_PATH}</div>',
+            unsafe_allow_html=True
+        )
+        st.markdown("</div>", unsafe_allow_html=True)
 
-        ### Problema
-
-        Clasificacion binaria:
-
-        - `is_severe = 1` si `Severity >= 3`
-        - `is_severe = 0` si `Severity < 3`
-
-        ### Modelo
-
-        - Libreria: River
-        - Algoritmo: Hoeffding Tree Classifier
-        - Codificacion categorica: OneHotEncoder incremental
-        - Entrenamiento: registro por registro
-        - Persistencia: Google Cloud Storage
-
-        ### Flujo de aprendizaje
-
-        1. Se carga un archivo mensual desde GCS.
-        2. Se prepara el dataset.
-        3. Para cada registro, el modelo predice primero.
-        4. Se actualizan metricas.
-        5. El modelo aprende con `learn_one`.
-        6. Se guarda el modelo actualizado en GCS.
-        """
-    )
-
-    st.markdown("### Variables usadas")
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown('<div class="card-title">Variables del modelo</div>', unsafe_allow_html=True)
     st.dataframe(
-        pd.DataFrame(
-            {
-                "feature": SELECTED_FEATURES,
-                "tipo": (
-                    ["numerica"] * len(NUM_FEATURES)
-                    + ["categorica"] * len(CAT_FEATURES)
-                    + ["booleana"] * len(BOOL_FEATURES)
-                    + ["temporal"] * len(DERIVED_TIME_FEATURES)
-                )
-            }
-        ),
+        pd.DataFrame({
+            "feature": SELECTED_FEATURES,
+            "grupo": (
+                ["numérica"] * len(NUM_FEATURES)
+                + ["categórica"] * len(CAT_FEATURES)
+                + ["booleana"] * len(BOOL_FEATURES)
+                + ["temporal"] * len(DERIVED_TIME_FEATURES)
+            )
+        }),
         use_container_width=True
     )
+    st.markdown("</div>", unsafe_allow_html=True)
 
 
-st.caption("Cloud Run · Streamlit · River · Google Cloud Storage")
+st.caption("RoadRisk AI · River · Google Cloud Run · Google Cloud Storage")
