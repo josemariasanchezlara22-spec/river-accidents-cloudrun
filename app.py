@@ -1,4 +1,5 @@
 import io
+import html
 import os
 import pickle
 import time
@@ -31,171 +32,44 @@ st.markdown(
     """
     <style>
     :root {
-        --bg: #eef3f8;
-        --card: #ffffff;
-        --primary: #0b2545;
-        --primary-2: #174ea6;
-        --primary-3: #2563eb;
-        --text: #102a43;
-        --text-soft: #425466;
-        --muted: #64748b;
-        --border: #d8e0ea;
-        --shadow: rgba(15, 39, 66, 0.10);
-
-        --green: #087443;
-        --green-bg: #e7f7ef;
-        --red: #b42318;
-        --red-bg: #fdecec;
-        --orange: #b54708;
-        --orange-bg: #fff1dc;
-        --blue-bg: #dbeafe;
+        --bg: #f4f7fb;
+        --surface: #ffffff;
+        --surface-soft: #f9fbfe;
+        --surface-tint: #edf3ff;
+        --primary: #0f3b66;
+        --primary-2: #1756a9;
+        --accent: #2563eb;
+        --accent-2: #0ea5e9;
+        --text: #132238;
+        --text-soft: #52637a;
+        --muted: #718096;
+        --border: #d8e2ee;
+        --shadow: 0 14px 34px rgba(16, 42, 67, 0.08);
+        --shadow-soft: 0 8px 24px rgba(16, 42, 67, 0.06);
+        --success: #127b4f;
+        --success-bg: #e8f7ef;
+        --danger: #b42318;
+        --danger-bg: #fdecec;
+        --warning: #b45309;
+        --warning-bg: #fff1dc;
+        --info-bg: #dbeafe;
     }
 
     .stApp {
-        background: var(--bg);
+        background:
+            radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 28%),
+            linear-gradient(180deg, #f8fbff 0%, var(--bg) 28%, #f4f7fb 100%);
         color: var(--text);
     }
 
     .block-container {
-        padding-top: 1.2rem;
+        padding-top: 1rem;
         padding-bottom: 2rem;
         max-width: 1280px;
     }
 
-    /* ---------------- HEADER ---------------- */
-
-    .topbar {
-        background: linear-gradient(135deg, #0b2545 0%, #123f73 55%, #2563eb 100%);
-        color: #ffffff;
-        padding: 2rem;
-        border-radius: 24px;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 14px 35px rgba(15, 39, 66, 0.24);
-    }
-
-    .topbar h1 {
-        color: #ffffff !important;
-        font-size: 2.4rem;
-        margin: 0;
-        font-weight: 800;
-        letter-spacing: -0.04em;
-    }
-
-    .topbar p {
-        color: #e5efff !important;
-        margin-top: 0.5rem;
-        font-size: 1.05rem;
-        max-width: 900px;
-        line-height: 1.65;
-    }
-
-    .pill {
-        display: inline-block;
-        background: rgba(255,255,255,0.16);
-        color: #ffffff !important;
-        border: 1px solid rgba(255,255,255,0.35);
-        padding: 0.35rem 0.75rem;
-        border-radius: 999px;
-        font-size: 0.85rem;
-        margin-bottom: 1rem;
-        font-weight: 700;
-    }
-
-    /* ---------------- CARDS ---------------- */
-
-    .card {
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: 20px;
-        padding: 1.25rem;
-        box-shadow: 0 8px 24px var(--shadow);
-        margin-bottom: 1rem;
-        color: var(--text);
-    }
-
-    .card-title {
-        font-size: 1.05rem;
-        font-weight: 800;
-        color: var(--primary) !important;
-        margin-bottom: 0.35rem;
-    }
-
-    .card-subtitle {
-        color: var(--muted) !important;
-        font-size: 0.92rem;
-        margin-bottom: 1rem;
-    }
-
-    .small-code {
-        background: #f8fafc;
-        border: 1px solid var(--border);
-        padding: 0.8rem;
-        border-radius: 12px;
-        font-family: monospace;
-        font-size: 0.86rem;
-        color: #1e3a5f !important;
-    }
-
-    /* ---------------- STATUS ---------------- */
-
-    .status-good {
-        background: var(--green-bg);
-        color: var(--green) !important;
-        padding: 0.85rem 1rem;
-        border-radius: 14px;
-        font-weight: 800;
-        border: 1px solid #9ddfc0;
-    }
-
-    .status-neutral {
-        background: var(--blue-bg);
-        color: var(--primary-2) !important;
-        padding: 0.85rem 1rem;
-        border-radius: 14px;
-        font-weight: 800;
-        border: 1px solid #93c5fd;
-    }
-
-    .status-warn {
-        background: var(--orange-bg);
-        color: var(--orange) !important;
-        padding: 0.85rem 1rem;
-        border-radius: 14px;
-        font-weight: 800;
-        border: 1px solid #f7c56b;
-    }
-
-    .risk-high {
-        background: var(--red-bg);
-        border: 1px solid #f5b5b0;
-        color: var(--red) !important;
-        border-radius: 18px;
-        padding: 1.3rem;
-        font-weight: 900;
-        font-size: 1.25rem;
-        text-align: center;
-    }
-
-    .risk-low {
-        background: var(--green-bg);
-        border: 1px solid #a8e6c8;
-        color: var(--green) !important;
-        border-radius: 18px;
-        padding: 1.3rem;
-        font-weight: 900;
-        font-size: 1.25rem;
-        text-align: center;
-    }
-
-    /* ---------------- STREAMLIT TEXT DEFAULTS ---------------- */
-
-    h1, h2, h3, h4, h5, h6,
-    p, span, label, div {
-        color: inherit;
-    }
-
     section[data-testid="stSidebar"] {
-        background-color: #ffffff;
+        background: #ffffff;
         border-right: 1px solid var(--border);
     }
 
@@ -203,25 +77,228 @@ st.markdown(
         color: var(--text) !important;
     }
 
-    /* ---------------- RADIO NAVIGATION ---------------- */
+    .page-head {
+        background: linear-gradient(135deg, #0f3b66 0%, #1756a9 58%, #2563eb 100%);
+        color: #ffffff;
+        padding: 1.45rem 1.5rem;
+        border-radius: 22px;
+        box-shadow: 0 18px 40px rgba(15, 59, 102, 0.20);
+        margin-bottom: 1rem;
+    }
 
-    div[role="radiogroup"] {
-        background: #ffffff;
+    .page-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        background: rgba(255, 255, 255, 0.14);
+        border: 1px solid rgba(255, 255, 255, 0.26);
+        color: #ffffff !important;
+        border-radius: 999px;
+        padding: 0.34rem 0.72rem;
+        font-size: 0.82rem;
+        font-weight: 800;
+        margin-bottom: 0.8rem;
+    }
+
+    .page-head h1 {
+        margin: 0;
+        color: #ffffff !important;
+        font-size: 2.05rem;
+        font-weight: 900;
+    }
+
+    .page-head p {
+        margin: 0.45rem 0 0;
+        color: rgba(255, 255, 255, 0.86) !important;
+        font-size: 1rem;
+        line-height: 1.6;
+        max-width: 980px;
+    }
+
+    .surface {
+        background: var(--surface);
         border: 1px solid var(--border);
         border-radius: 18px;
-        padding: 0.55rem 0.75rem;
-        box-shadow: 0 8px 24px rgba(15, 39, 66, 0.06);
-        gap: 0.35rem;
+        padding: 1rem 1.1rem;
+        box-shadow: var(--shadow-soft);
+        margin-bottom: 1rem;
+    }
+
+    .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 1rem 1.1rem;
+        box-shadow: var(--shadow-soft);
+        margin-bottom: 1rem;
+        color: var(--text);
+    }
+
+    .card-title {
+        font-size: 1rem;
+        font-weight: 900;
+        color: var(--primary) !important;
+        margin-bottom: 0.25rem;
+    }
+
+    .card-subtitle {
+        color: var(--muted) !important;
+        font-size: 0.92rem;
+        line-height: 1.55;
+        margin-bottom: 0.95rem;
+    }
+
+    .small-code {
+        background: #f7faff;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 0.8rem 0.85rem;
+        font-family: monospace;
+        font-size: 0.86rem;
+        color: #1e3a5f !important;
+        word-break: break-all;
+    }
+
+    .surface-head {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        margin-bottom: 0.95rem;
+    }
+
+    .surface-title {
+        font-size: 1rem;
+        font-weight: 900;
+        color: var(--primary) !important;
+    }
+
+    .surface-subtitle {
+        color: var(--muted) !important;
+        font-size: 0.92rem;
+        line-height: 1.55;
+    }
+
+    .status-banner {
+        border-radius: 16px;
+        padding: 0.95rem 1rem;
+        font-weight: 800;
+        border: 1px solid transparent;
+    }
+
+    .status-ok {
+        background: var(--success-bg);
+        color: var(--success) !important;
+        border-color: #bfead1;
+    }
+
+    .status-good {
+        background: var(--success-bg);
+        color: var(--success) !important;
+        border-color: #bfead1;
+    }
+
+    .status-neutral {
+        background: var(--info-bg);
+        color: var(--primary-2) !important;
+        border-color: #93c5fd;
+    }
+
+    .status-warn {
+        background: var(--warning-bg);
+        color: var(--warning) !important;
+        border-color: #f2ce88;
+    }
+
+    .status-info {
+        background: var(--info-bg);
+        color: var(--primary-2) !important;
+        border-color: #93c5fd;
+    }
+
+    .status-danger {
+        background: var(--danger-bg);
+        color: var(--danger) !important;
+        border-color: #f5b5b0;
+    }
+
+    .risk-band {
+        border-radius: 18px;
+        padding: 1.15rem 1.15rem;
+        font-weight: 900;
+        font-size: 1.15rem;
+        text-align: center;
+        border: 1px solid transparent;
+        box-shadow: var(--shadow-soft);
+    }
+
+    .risk-high {
+        background: #fff0ef;
+        border-color: #f5b5b0;
+        color: var(--danger) !important;
+    }
+
+    .risk-low {
+        background: var(--success-bg);
+        border-color: #bfead1;
+        color: var(--success) !important;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+    }
+
+    .info-item {
+        background: var(--surface-soft);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 0.8rem 0.9rem;
+    }
+
+    .info-label {
+        color: var(--muted) !important;
+        font-size: 0.8rem;
+        font-weight: 800;
+        margin-bottom: 0.18rem;
+    }
+
+    .info-value {
+        color: var(--text) !important;
+        font-size: 0.96rem;
+        font-weight: 700;
+        line-height: 1.45;
+        word-break: break-word;
+    }
+
+    .artifact-path {
+        background: #f7faff;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 0.72rem 0.8rem;
+        font-family: monospace;
+        font-size: 0.86rem;
+        color: #1e3a5f !important;
+        word-break: break-all;
+    }
+
+    div[role="radiogroup"] {
+        background: rgba(255, 255, 255, 0.84);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 0.35rem;
+        box-shadow: var(--shadow-soft);
+        gap: 0.3rem;
     }
 
     div[role="radiogroup"] label {
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
+        background: transparent;
         border-radius: 999px;
-        padding: 0.55rem 0.9rem;
-        margin-right: 0.35rem;
+        padding: 0.5rem 0.9rem;
+        margin-right: 0;
         color: var(--text) !important;
         font-weight: 800;
+        border: 1px solid transparent;
     }
 
     div[role="radiogroup"] label p {
@@ -231,22 +308,21 @@ st.markdown(
 
     div[role="radiogroup"] label:hover {
         background: #eaf2ff;
-        border-color: #93c5fd;
+        border-color: #c7dbff;
     }
 
     div[role="radiogroup"] input:checked + div {
-        background: var(--primary-3) !important;
-        border-color: var(--primary-3) !important;
+        background: var(--accent) !important;
+        border-color: var(--accent) !important;
+        color: #ffffff !important;
     }
-
-    /* ---------------- METRICS ---------------- */
 
     div[data-testid="stMetric"] {
         background: #ffffff;
         border: 1px solid var(--border);
         padding: 1rem;
-        border-radius: 18px;
-        box-shadow: 0 8px 24px rgba(15, 39, 66, 0.06);
+        border-radius: 16px;
+        box-shadow: var(--shadow-soft);
     }
 
     div[data-testid="stMetricLabel"] {
@@ -326,11 +402,14 @@ st.markdown(
     .stButton > button {
         border-radius: 999px;
         font-weight: 800;
-        border: 1px solid var(--primary-3);
+        border: 1px solid var(--accent);
+        padding-left: 1rem;
+        padding-right: 1rem;
+        box-shadow: none;
     }
 
     .stButton > button[kind="primary"] {
-        background: var(--primary-3);
+        background: var(--accent);
         color: #ffffff !important;
     }
 
@@ -338,8 +417,6 @@ st.markdown(
         border-color: var(--primary-2);
         color: var(--primary-2);
     }
-
-    /* ---------------- CODE ---------------- */
 
     code {
         color: #174ea6 !important;
@@ -351,6 +428,17 @@ st.markdown(
     pre, pre code {
         color: #d1fae5 !important;
         background: #0f172a !important;
+    }
+
+    .mono-block {
+        background: #f7faff;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 0.75rem 0.85rem;
+        font-family: monospace;
+        font-size: 0.86rem;
+        color: #1e3a5f !important;
+        word-break: break-all;
     }
 
     </style>
@@ -408,6 +496,71 @@ SELECTED_FEATURES = (
     + BOOL_FEATURES
     + DERIVED_TIME_FEATURES
 )
+
+
+# =========================================================
+# UI HELPERS
+# =========================================================
+
+
+def esc(value) -> str:
+    return html.escape("" if value is None else str(value))
+
+
+def render_page_header(eyebrow: str, title: str, subtitle: str):
+    st.markdown(
+        f"""
+        <div class="page-head">
+            <div class="page-badge">{esc(eyebrow)}</div>
+            <h1>{esc(title)}</h1>
+            <p>{esc(subtitle)}</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+def render_status_banner(message: str, tone: str = "info"):
+    st.markdown(
+        f'<div class="status-banner status-{tone}">{esc(message)}</div>',
+        unsafe_allow_html=True
+    )
+
+
+def render_surface(title: str, subtitle: str = ""):
+    st.markdown('<section class="surface">', unsafe_allow_html=True)
+    st.markdown(
+        f"""
+        <div class="surface-head">
+            <div class="surface-title">{esc(title)}</div>
+            {"<div class='surface-subtitle'>" + esc(subtitle) + "</div>" if subtitle else ""}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+def close_surface():
+    st.markdown('</section>', unsafe_allow_html=True)
+
+
+def render_path_block(path: str):
+    st.markdown(f'<div class="artifact-path">{esc(path)}</div>', unsafe_allow_html=True)
+
+
+def render_info_grid(items):
+    st.markdown('<div class="info-grid">', unsafe_allow_html=True)
+    for label, value in items:
+        st.markdown(
+            f"""
+            <div class="info-item">
+                <div class="info-label">{esc(label)}</div>
+                <div class="info-value">{esc(value)}</div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+    st.markdown('</div>', unsafe_allow_html=True)
 
 
 # =========================================================
@@ -614,6 +767,9 @@ def prepare_accidents_df(df: pd.DataFrame) -> pd.DataFrame:
 
         df[col] = df[col].fillna(False).astype(int)
 
+    if TIME_COL in df.columns:
+        df = df.sort_values(TIME_COL, kind="mergesort").reset_index(drop=True)
+
     return df[SELECTED_FEATURES + [TARGET_BINARY, TARGET_ORIGINAL]]
 
 
@@ -673,8 +829,10 @@ def train_on_file(
     if len(df) == 0:
         raise ValueError("El archivo no tiene registros validos despues de preparar datos")
 
+    # En flujo incremental preferimos procesar una ventana temporal contigua
+    # en lugar de una muestra aleatoria, porque la aleatoriedad rompe la secuencia.
     if max_rows is not None and len(df) > max_rows:
-        df = df.sample(n=max_rows, random_state=random_state)
+        df = df.head(max_rows).copy()
 
     class_counts = df[TARGET_BINARY].value_counts()
     n_0 = int(class_counts.get(0, 0))
@@ -797,15 +955,30 @@ history = st.session_state.history
 # HEADER
 # =========================================================
 
+render_page_header(
+    "Online learning · River · Cloud Run",
+    "RoadRisk AI",
+    "Plataforma de aprendizaje incremental para estimar la severidad de accidentes vehiculares con datos históricos en Google Cloud Storage."
+)
+
+status_tone = "ok" if st.session_state.model_status_type == "good" else "warn"
+render_status_banner(st.session_state.model_status, tone=status_tone)
+
 st.markdown(
-    """
-    <div class="topbar">
-        <div class="pill">Online Learning · River · Cloud Run</div>
-        <h1>RoadRisk AI</h1>
-        <p>
-            Plataforma de aprendizaje incremental para estimar la severidad de accidentes
-            vehiculares usando datos históricos de US Accidents y almacenamiento en Google Cloud Storage.
-        </p>
+    f"""
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; margin: 0.9rem 0 1rem;">
+        <div class="surface" style="margin-bottom: 0; padding: 0.9rem 1rem;">
+            <div class="info-label">Bucket fijo</div>
+            <div class="info-value">{esc(st.session_state.bucket_name)}</div>
+        </div>
+        <div class="surface" style="margin-bottom: 0; padding: 0.9rem 1rem;">
+            <div class="info-label">Modelo</div>
+            <div class="info-value">{esc(MODEL_PATH)}</div>
+        </div>
+        <div class="surface" style="margin-bottom: 0; padding: 0.9rem 1rem;">
+            <div class="info-label">Historial</div>
+            <div class="info-value">{esc(HISTORY_PATH)}</div>
+        </div>
     </div>
     """,
     unsafe_allow_html=True
@@ -817,7 +990,8 @@ st.markdown(
 # =========================================================
 
 with st.sidebar:
-    st.title("Configuración")
+    st.markdown("### Configuración")
+    st.caption("Parámetros operativos de la sesión actual.")
 
     st.session_state.project_id = st.text_input(
         "Project ID",
@@ -849,11 +1023,14 @@ with st.sidebar:
 
     st.divider()
 
+    st.caption("Bucket fijo")
+    render_path_block(st.session_state.bucket_name)
+
     st.caption("Modelo")
-    st.code(f"gs://{st.session_state.bucket_name}/{MODEL_PATH}")
+    render_path_block(f"gs://{st.session_state.bucket_name}/{MODEL_PATH}")
 
     st.caption("Historial")
-    st.code(f"gs://{st.session_state.bucket_name}/{HISTORY_PATH}")
+    render_path_block(f"gs://{st.session_state.bucket_name}/{HISTORY_PATH}")
 
 
 # =========================================================
