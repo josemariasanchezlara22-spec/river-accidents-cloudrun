@@ -1,0 +1,35 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - us-central1-docker.pkg.dev/ml-big-data-q2-up/river-accidents/river-accidents-app:$COMMIT_SHA
+      - .
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - us-central1-docker.pkg.dev/ml-big-data-q2-up/river-accidents/river-accidents-app:$COMMIT_SHA
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - river-accidents-app
+      - --image
+      - us-central1-docker.pkg.dev/ml-big-data-q2-up/river-accidents/river-accidents-app:$COMMIT_SHA
+      - --region
+      - us-central1
+      - --allow-unauthenticated
+      - --memory
+      - 2Gi
+      - --cpu
+      - "2"
+      - --timeout
+      - "3600"
+      - --set-env-vars
+      - PROJECT_ID=ml-big-data-q2-up,BUCKET_NAME=us-accidents-am-up-02,DATA_PREFIX=raw/
+
+images:
+  - us-central1-docker.pkg.dev/ml-big-data-q2-up/river-accidents/river-accidents-app:$COMMIT_SHA
