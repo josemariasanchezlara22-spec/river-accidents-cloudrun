@@ -406,16 +406,55 @@ st.markdown(
         padding-left: 1rem;
         padding-right: 1rem;
         box-shadow: none;
+        background: #ffffff;
+        color: var(--primary) !important;
+        min-height: 2.75rem;
     }
 
     .stButton > button[kind="primary"] {
         background: var(--accent);
         color: #ffffff !important;
+        border-color: var(--accent);
+    }
+
+    .stButton > button[kind="secondary"] {
+        background: #ffffff;
+        color: var(--primary) !important;
+        border-color: #9bb7da;
+    }
+
+    .stButton > button[data-testid="baseButton-secondary"] {
+        background: #ffffff;
+        color: var(--primary) !important;
+        border-color: #9bb7da;
+    }
+
+    .stButton > button[data-testid="baseButton-primary"] {
+        background: var(--accent);
+        color: #ffffff !important;
+        border-color: var(--accent);
     }
 
     .stButton > button:hover {
         border-color: var(--primary-2);
-        color: var(--primary-2);
+        color: var(--primary-2) !important;
+        background: #f8fbff;
+        transform: translateY(-1px);
+        box-shadow: 0 10px 20px rgba(16, 42, 67, 0.08);
+    }
+
+    .stButton > button[kind="primary"]:hover,
+    .stButton > button[data-testid="baseButton-primary"]:hover {
+        background: #1f5fe0;
+        color: #ffffff !important;
+        border-color: #1f5fe0;
+    }
+
+    .stButton > button[kind="secondary"]:hover,
+    .stButton > button[data-testid="baseButton-secondary"]:hover {
+        background: #f8fbff;
+        color: var(--primary-2) !important;
+        border-color: #8fb0d6;
     }
 
     code {
@@ -1284,28 +1323,129 @@ elif page == "Aprendizaje manual":
 # =========================================================
 
 elif page == "Entrenamiento incremental":
+    render_surface(
+        "Entrenamiento incremental por archivo",
+        "Selecciona un archivo CSV concreto para entrenarlo. Los ya procesados se deshabilitan usando el historial persistido."
+    )
+
+    if "files" not in st.session_state or not st.session_state.files:
+        with st.spinner("Listando archivos automáticamente..."):
+            st.session_state.files = list_csv_files(
+                st.session_state.bucket_name,
+                st.session_state.prefix
+            )
+
+    processed_files = set()
+    if not st.session_state.history.empty and "blob_name" in st.session_state.history.columns:
+        processed_files = set(st.session_state.history["blob_name"].dropna().astype(str))
+
+    total_files = len(st.session_state.files)
+    processed_count = sum(1 for blob in st.session_state.files if blob in processed_files)
+    pending_count = total_files - processed_count
+
+    top_a, top_b, top_c = st.columns(3)
+    top_a.metric("Archivos listados", f"{total_files:,}")
+    top_b.metric("Procesados", f"{processed_count:,}")
+    top_c.metric("Pendientes", f"{pending_count:,}")
+
+    col_left, col_right = st.columns([1.2, 1])
+
+    with col_left:
+        st.markdown("### Archivos disponibles")
+        if not st.session_state.files:
+            st.info("No se encontraron archivos CSV con el prefijo configurado.")
+        else:
+            for idx, blob_name in enumerate(st.session_state.files):
+                filename = blob_name.split("/")[-1]
+                is_processed = blob_name in processed_files
+
+                st.markdown('<div class="surface">', unsafe_allow_html=True)
+                st.markdown(
+                    f"""
+                    <div class="surface-head">
+                        <div class="surface-title">{esc(filename)}</div>
+                        <div class="surface-subtitle">{esc(blob_name)}</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+                if is_processed:
+                    render_status_banner("Ya procesado", tone="ok")
+                else:
+                    render_status_banner("Pendiente de procesar", tone="info")
+
+                if st.button(
+                    "Procesar archivo",
+                    key=f"process_selected_{idx}_{blob_name}",
+                    type="primary",
+                    disabled=is_processed
+                ):
+                    with st.spinner("Entrenando modelo incremental..."):
+                        model_bundle, result = train_on_file(
+                            model_bundle=model_bundle,
+                            bucket_name=st.session_state.bucket_name,
+                            blob_name=blob_name,
+                            max_rows=int(st.session_state.max_rows),
+                            balance_training=bool(st.session_state.balance_training)
+                        )
+
+                    save_pickle_to_gcs(
+                        model_bundle,
+                        st.session_state.bucket_name,
+                        MODEL_PATH
+                    )
+
+                    hist = st.session_state.history.copy()
+                    hist = pd.concat([hist, pd.DataFrame([result])], ignore_index=True)
+                    st.session_state.history = hist
+
+                    save_history_to_gcs(
+                        hist,
+                        st.session_state.bucket_name,
+                        HISTORY_PATH
+                    )
+
+                    st.session_state.model_bundle = model_bundle
+                    st.success(f"Archivo procesado correctamente: {filename}")
+                    st.rerun()
+
+                st.markdown("</div>", unsafe_allow_html=True)
+
+    with col_right:
+        st.markdown('<div class="surface">', unsafe_allow_html=True)
+        st.markdown('<div class="surface-head"><div class="surface-title">Configuración de proceso</div><div class="surface-subtitle">Fuente operativa y criterios actuales.</div></div>', unsafe_allow_html=True)
+        st.caption("Origen")
+        render_path_block(f"gs://{st.session_state.bucket_name}/{st.session_state.prefix}")
+        st.caption("Modelo")
+        render_path_block(f"gs://{st.session_state.bucket_name}/{MODEL_PATH}")
+        st.caption("Historial")
+        render_path_block(f"gs://{st.session_state.bucket_name}/{HISTORY_PATH}")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    st.stop()
+
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown('<div class="card-title">Entrenamiento incremental por archivo</div>', unsafe_allow_html=True)
     st.markdown(
-        '<div class="card-subtitle">Cada archivo CSV mensual se procesa como una nueva partición temporal.</div>',
+        '<div class="card-subtitle">Selecciona cualquier CSV disponible. Los archivos ya procesados quedan deshabilitados y se toman del historial guardado.</div>',
         unsafe_allow_html=True
     )
 
     a, b, c = st.columns(3)
 
     with a:
-        if st.button("Listar archivos", type="secondary"):
+        if st.button("Actualizar listado", type="secondary"):
             with st.spinner("Consultando Google Cloud Storage..."):
                 st.session_state.files = list_csv_files(
                     st.session_state.bucket_name,
                     st.session_state.prefix
                 )
-                st.session_state.file_index = 0
-
             st.success(f"Archivos encontrados: {len(st.session_state.files)}")
 
     with b:
-        process_next = st.button("Procesar siguiente archivo", type="primary")
+        st.caption("Fuente de verdad")
+        st.code(f"gs://{st.session_state.bucket_name}/{st.session_state.prefix}")
 
     with c:
         reset_all = st.button("Reiniciar modelo e historial")
@@ -1317,81 +1457,104 @@ elif page == "Entrenamiento incremental":
         st.session_state.model_bundle = new_model_bundle()
         st.session_state.history = pd.DataFrame()
         st.session_state.files = []
-        st.session_state.file_index = 0
         st.session_state.last_x = None
         st.session_state.last_prediction = None
 
         st.success("Modelo e historial reiniciados.")
         st.rerun()
 
-    if process_next:
-        if not st.session_state.files:
-            with st.spinner("Listando archivos automáticamente..."):
-                st.session_state.files = list_csv_files(
-                    st.session_state.bucket_name,
-                    st.session_state.prefix
-                )
-                st.session_state.file_index = 0
-
-        files = st.session_state.files
-        idx = st.session_state.file_index
-
-        if idx >= len(files):
-            st.success("Todos los archivos ya fueron procesados.")
-        else:
-            blob_name = files[idx]
-
-            st.info(f"Procesando {idx + 1}/{len(files)}: {blob_name}")
-
-            with st.spinner("Entrenando modelo incremental..."):
-                model_bundle, result = train_on_file(
-                    model_bundle=model_bundle,
-                    bucket_name=st.session_state.bucket_name,
-                    blob_name=blob_name,
-                    max_rows=int(st.session_state.max_rows),
-                    balance_training=bool(st.session_state.balance_training)
-                )
-
-            save_pickle_to_gcs(
-                model_bundle,
+    if not st.session_state.files:
+        with st.spinner("Listando archivos automáticamente..."):
+            st.session_state.files = list_csv_files(
                 st.session_state.bucket_name,
-                MODEL_PATH
+                st.session_state.prefix
             )
 
-            hist = st.session_state.history.copy()
-            hist = pd.concat([hist, pd.DataFrame([result])], ignore_index=True)
+    processed_files = set()
+    if not st.session_state.history.empty and "blob_name" in st.session_state.history.columns:
+        processed_files = set(st.session_state.history["blob_name"].dropna().astype(str))
 
-            st.session_state.history = hist
-
-            save_history_to_gcs(
-                hist,
-                st.session_state.bucket_name,
-                HISTORY_PATH
-            )
-
-            st.session_state.file_index += 1
-            st.session_state.model_bundle = model_bundle
-
-            st.success("Archivo procesado correctamente.")
-
-            m1, m2, m3, m4 = st.columns(4)
-            m1.metric("Accuracy", f"{result['accuracy']:.3f}")
-            m2.metric("Recall", f"{result['recall']:.3f}")
-            m3.metric("F1", f"{result['f1']:.3f}")
-            m4.metric("Filas aprendidas", f"{result['rows_learned']:,}")
-
-    st.markdown("</div>", unsafe_allow_html=True)
+    total_files = len(st.session_state.files)
+    processed_count = sum(1 for blob in st.session_state.files if blob in processed_files)
+    pending_count = total_files - processed_count
 
     s1, s2, s3 = st.columns(3)
-    s1.metric("Archivo actual", st.session_state.file_index)
-    s2.metric("Archivos cargados", len(st.session_state.files))
-    s3.metric("Filas máximas por archivo", f"{int(st.session_state.max_rows):,}")
+    s1.metric("Archivos listados", f"{total_files:,}")
+    s2.metric("Procesados", f"{processed_count:,}")
+    s3.metric("Pendientes", f"{pending_count:,}")
 
-    if st.session_state.files and st.session_state.file_index < len(st.session_state.files):
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.markdown('<div class="card-title">Siguiente partición</div>', unsafe_allow_html=True)
-        st.write(st.session_state.files[st.session_state.file_index])
-        st.markdown("</div>", unsafe_allow_html=True)
+    if not st.session_state.files:
+        st.info("No se encontraron archivos CSV con el prefijo configurado.")
+    else:
+        st.markdown("#### Archivos disponibles")
+        cols = st.columns(2)
+
+        for idx, blob_name in enumerate(st.session_state.files):
+            is_processed = blob_name in processed_files
+            col = cols[idx % 2]
+
+            with col:
+                st.markdown('<div class="surface">', unsafe_allow_html=True)
+                st.markdown(
+                    f"""
+                    <div class="surface-head">
+                        <div class="surface-title">{esc(blob_name.split('/')[-1])}</div>
+                        <div class="surface-subtitle">{esc(blob_name)}</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+                if is_processed:
+                    render_status_banner("Ya procesado", tone="ok")
+                else:
+                    render_status_banner("Pendiente de procesar", tone="info")
+
+                if st.button(
+                    "Procesar archivo",
+                    key=f"process_{idx}_{blob_name}",
+                    type="primary",
+                    disabled=is_processed
+                ):
+                    with st.spinner("Entrenando modelo incremental..."):
+                        model_bundle, result = train_on_file(
+                            model_bundle=model_bundle,
+                            bucket_name=st.session_state.bucket_name,
+                            blob_name=blob_name,
+                            max_rows=int(st.session_state.max_rows),
+                            balance_training=bool(st.session_state.balance_training)
+                        )
+
+                    save_pickle_to_gcs(
+                        model_bundle,
+                        st.session_state.bucket_name,
+                        MODEL_PATH
+                    )
+
+                    hist = st.session_state.history.copy()
+                    hist = pd.concat([hist, pd.DataFrame([result])], ignore_index=True)
+                    st.session_state.history = hist
+
+                    save_history_to_gcs(
+                        hist,
+                        st.session_state.bucket_name,
+                        HISTORY_PATH
+                    )
+
+                    st.session_state.model_bundle = model_bundle
+
+                    st.success(f"Archivo procesado correctamente: {blob_name}")
+
+                    m1, m2, m3, m4 = st.columns(4)
+                    m1.metric("Accuracy", f"{result['accuracy']:.3f}")
+                    m2.metric("Recall", f"{result['recall']:.3f}")
+                    m3.metric("F1", f"{result['f1']:.3f}")
+                    m4.metric("Filas aprendidas", f"{result['rows_learned']:,}")
+                    st.rerun()
+
+                st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
 
 # =========================================================
