@@ -113,9 +113,20 @@ st.markdown(
 # CONSTANTES
 # =========================================================
 
-DEFAULT_PROJECT_ID = os.getenv("PROJECT_ID", "am-up-01")
-DEFAULT_BUCKET_NAME = os.getenv("BUCKET_NAME", "us-accidents-am-up-01")
-DEFAULT_PREFIX = os.getenv("DATA_PREFIX", "raw/")
+DEFAULT_PROJECT_ID = os.getenv(
+    "PROJECT_ID",
+    "ml-big-data-q2-up"
+)
+
+DEFAULT_BUCKET_NAME = os.getenv(
+    "BUCKET_NAME",
+    "us-accidents-am-up-02"
+)
+
+DEFAULT_PREFIX = os.getenv(
+    "DATA_PREFIX",
+    "raw/"
+)
 
 MODEL_PATH = os.getenv("MODEL_PATH", "models/modelo_incremental_ht.pkl")
 HISTORY_PATH = os.getenv("HISTORY_PATH", "models/history_incremental.csv")
