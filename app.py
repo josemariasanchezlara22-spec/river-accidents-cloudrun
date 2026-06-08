@@ -178,6 +178,21 @@ st.markdown(
         line-height: 1.55;
     }
 
+    .section-title {
+        color: var(--text) !important;
+        font-size: 1.05rem;
+        font-weight: 900;
+        margin: 0.9rem 0 0.65rem;
+        letter-spacing: 0;
+    }
+
+    .section-note {
+        color: var(--muted) !important;
+        font-size: 0.92rem;
+        line-height: 1.55;
+        margin-bottom: 0.8rem;
+    }
+
     .status-banner {
         border-radius: 16px;
         padding: 0.95rem 1rem;
@@ -435,6 +450,16 @@ st.markdown(
         border-color: var(--accent);
     }
 
+    .stButton > button:disabled {
+        background: #eef2f7 !important;
+        color: #94a3b8 !important;
+        border-color: #d5deea !important;
+        cursor: not-allowed;
+        opacity: 1;
+        box-shadow: none;
+        transform: none;
+    }
+
     .stButton > button:hover {
         border-color: var(--primary-2);
         color: var(--primary-2) !important;
@@ -455,6 +480,24 @@ st.markdown(
         background: #f8fbff;
         color: var(--primary-2) !important;
         border-color: #8fb0d6;
+    }
+
+    div[data-testid="stRadio"] label,
+    div[data-testid="stRadio"] label * {
+        color: var(--text) !important;
+    }
+
+    div[data-testid="stRadio"] [role="radiogroup"] {
+        color: var(--text) !important;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        color: var(--text) !important;
+    }
+
+    .surface h1, .surface h2, .surface h3, .surface h4, .surface h5, .surface h6,
+    .card h1, .card h2, .card h3, .card h4, .card h5, .card h6 {
+        color: var(--text) !important;
     }
 
     code {
@@ -1328,6 +1371,43 @@ elif page == "Entrenamiento incremental":
         "Selecciona un archivo CSV concreto para entrenarlo. Los ya procesados se deshabilitan usando el historial persistido."
     )
 
+    st.markdown('<div class="section-title">Operación</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="section-note">Puedes actualizar el listado, procesar archivos individuales o borrar el modelo e historial para empezar de cero.</div>',
+        unsafe_allow_html=True
+    )
+
+    op_a, op_b, op_c = st.columns([1, 1.2, 1])
+
+    with op_a:
+        if st.button("Actualizar listado", type="secondary"):
+            with st.spinner("Consultando Google Cloud Storage..."):
+                st.session_state.files = list_csv_files(
+                    st.session_state.bucket_name,
+                    st.session_state.prefix
+                )
+            st.success(f"Archivos encontrados: {len(st.session_state.files)}")
+
+    with op_b:
+        st.caption("Origen")
+        render_path_block(f"gs://{st.session_state.bucket_name}/{st.session_state.prefix}")
+
+    with op_c:
+        reset_all = st.button("Borrar modelo e historial", type="secondary")
+
+    if reset_all:
+        delete_blob_if_exists(st.session_state.bucket_name, MODEL_PATH)
+        delete_blob_if_exists(st.session_state.bucket_name, HISTORY_PATH)
+
+        st.session_state.model_bundle = new_model_bundle()
+        st.session_state.history = pd.DataFrame()
+        st.session_state.files = []
+        st.session_state.last_x = None
+        st.session_state.last_prediction = None
+
+        st.success("Modelo e historial borrados.")
+        st.rerun()
+
     if "files" not in st.session_state or not st.session_state.files:
         with st.spinner("Listando archivos automáticamente..."):
             st.session_state.files = list_csv_files(
@@ -1343,6 +1423,8 @@ elif page == "Entrenamiento incremental":
     processed_count = sum(1 for blob in st.session_state.files if blob in processed_files)
     pending_count = total_files - processed_count
 
+    st.markdown('<div class="section-title">Resumen</div>', unsafe_allow_html=True)
+
     top_a, top_b, top_c = st.columns(3)
     top_a.metric("Archivos listados", f"{total_files:,}")
     top_b.metric("Procesados", f"{processed_count:,}")
@@ -1351,7 +1433,7 @@ elif page == "Entrenamiento incremental":
     col_left, col_right = st.columns([1.2, 1])
 
     with col_left:
-        st.markdown("### Archivos disponibles")
+        st.markdown('<div class="section-title">Archivos disponibles</div>', unsafe_allow_html=True)
         if not st.session_state.files:
             st.info("No se encontraron archivos CSV con el prefijo configurado.")
         else:
